@@ -1,0 +1,72 @@
+.table-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Handle internal scroll */
+}
+
+/* Remove default H3 from previous implementation if user didn't remove it from JSX. 
+   Ideally we remove the H3 from JSX too to use a unified header, but CSS can hide it for now or style it. */
+.table-container h3 {
+    margin: 0;
+    padding: 8px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-color);
+    background: #f8f9fa;
+    color: var(--text-primary);
+    flex-shrink: 0;
+}
+
+.table-scroll-area {
+    flex: 1;
+    overflow: auto;
+}
+
+.component-table {
+    width: 100%;
+    border-collapse: separate;
+    /* Required for sticky header */
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+.component-table th {
+    position: sticky;
+    top: 0;
+    background-color: #f1f5f9;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
+
+.component-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    /* Technical look for values */
+}
+
+.component-table tr:hover td {
+    background-color: var(--row-hover);
+}
+
+.component-table tr.selected td {
+    background-color: var(--row-selected);
+    color: var(--text-accent);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-focus);
+}
+
+/* Zebra striping could be optional
+.component-table tr:nth-child(even) {
+  background-color: rgba(0,0,0,0.01);
+} 
+*/
