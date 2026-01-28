@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { ComponentViewer } from './components/ComponentViewer';
+import { ThemeProvider } from './context/ThemeContext';
 import './index.css';
 
-function App() {
+function AppContent() {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
 
   // Sidebar Resize State
@@ -48,9 +49,11 @@ function App() {
       width: '100vw',
       overflow: 'hidden',
       cursor: isResizingSidebar ? 'col-resize' : 'default',
-      userSelect: isResizingSidebar ? 'none' : 'auto'
+      userSelect: isResizingSidebar ? 'none' : 'auto',
+      backgroundColor: 'var(--bg-app)',
+      color: 'var(--text-primary)'
     }}>
-      <div style={{ width: sidebarWidth, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: sidebarWidth, flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-sidebar)', borderRight: '1px solid var(--border-color)' }}>
         <Sidebar onSelect={setSelectedPath} />
       </div>
 
@@ -72,7 +75,7 @@ function App() {
         <div className="handle-lines" />
       </div>
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, margin: 0, backgroundColor: '#fff' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, margin: 0, backgroundColor: 'var(--bg-panel)' }}>
         {selectedPath ? (
           <ComponentViewer path={selectedPath} />
         ) : (
@@ -81,13 +84,21 @@ function App() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#888'
+            color: 'var(--text-secondary)'
           }}>
             Select a component from the sidebar to view details.
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

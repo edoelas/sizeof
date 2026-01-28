@@ -111,7 +111,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
                 flexShrink: 0,
                 minHeight: '100px',
                 borderBottom: '1px solid var(--border-color)',
-                backgroundColor: '#fff',
+                backgroundColor: 'var(--bg-grid)',
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column'
@@ -120,7 +120,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
                     position: 'absolute',
                     top: 0, left: 0, right: 0, bottom: 0,
                     // Technical Grid Pattern
-                    backgroundImage: 'linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px)',
+                    backgroundImage: 'linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)',
                     backgroundSize: '20px 20px',
                     opacity: 0.5,
                     pointerEvents: 'none'
@@ -131,7 +131,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
                     padding: '8px 16px',
                     fontSize: '13px',
                     color: 'var(--text-primary)',
-                    backgroundColor: '#f8f9fa',
+                    backgroundColor: 'var(--bg-sub-header)',
                     borderBottom: '1px solid var(--border-color)',
                     zIndex: 1
                 }}>DIAGRAM PREVIEW</h3>

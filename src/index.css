@@ -20,8 +20,32 @@
 
   --space-xs: 4px;
   --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
+  --bg-grid: #ffffff;
+  --grid-line: #e5e7eb;
+  --bg-sub-header: #f8f9fa;
+  --svg-filter: none;
+}
+
+[data-theme='dark'] {
+  --bg-app: #0f172a;
+  --bg-panel: #1e293b;
+  --bg-sidebar: #111827;
+  --bg-header: #1e293b;
+
+  --border-color: #374151;
+  --border-focus: #60a5fa;
+
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-accent: #60a5fa;
+
+  --row-hover: #334155;
+  --row-selected: #1e293b;
+
+  --bg-grid: #1e293b;
+  --grid-line: #334155;
+  --bg-sub-header: #0f172a;
+  --svg-filter: invert(1) hue-rotate(180deg);
 }
 
 body {
@@ -35,6 +59,11 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
   /* App handles scrolling */
+}
+
+.svg-renderer svg {
+  filter: var(--svg-filter);
+  transition: filter 0.2s;
 }
 
 * {

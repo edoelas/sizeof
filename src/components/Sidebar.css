@@ -16,11 +16,30 @@
 }
 
 .sidebar-header h2 {
-    margin: 0 0 8px 0;
+    margin: 0;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-secondary);
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    border-radius: 4px;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle:hover {
+    color: var(--text-primary);
+    background-color: var(--row-hover);
 }
 
 .search-input {
@@ -57,7 +76,7 @@
 }
 
 .node-label:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: var(--row-hover);
 }
 
 .node-label.file {
