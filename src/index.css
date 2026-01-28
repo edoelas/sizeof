@@ -2,22 +2,22 @@
   /* Technical Theme Palette */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
-  
+
   --bg-app: #f5f7fa;
   --bg-panel: #ffffff;
   --bg-sidebar: #f0f2f5;
   --bg-header: #ffffff;
-  
+
   --border-color: #d1d5db;
   --border-focus: #3b82f6;
-  
+
   --text-primary: #1f2937;
   --text-secondary: #6b7280;
   --text-accent: #2563eb;
-  
+
   --row-hover: #f3f4f6;
   --row-selected: #eff6ff;
-  
+
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -29,10 +29,12 @@ body {
   font-family: var(--font-sans);
   background-color: var(--bg-app);
   color: var(--text-primary);
-  font-size: 14px; /* More dense base size */
+  font-size: 14px;
+  /* More dense base size */
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow: hidden; /* App handles scrolling */
+  overflow: hidden;
+  /* App handles scrolling */
 }
 
 * {
@@ -44,13 +46,67 @@ body {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #aaa;
+}
+
+/* Resize Handle Styles */
+/* Vertical Handle (Sidebar) */
+.vertical-resize-handle {
+  transition: background-color 0.2s;
+  z-index: 50 !important;
+}
+
+.vertical-resize-handle .handle-lines {
+  width: 4px;
+  /* Thin pill */
+  height: 32px;
+  /* Good height */
+  background-color: #d1d5db;
+  /* Gray-300: Visible but subtle */
+  border-radius: 99px;
+  /* Full pill */
+  opacity: 1;
+  /* Always visible */
+  transition: background-color 0.2s;
+}
+
+.vertical-resize-handle:hover .handle-lines {
+  background-color: var(--border-focus);
+  /* Blue on hover */
+}
+
+/* Horizontal Handle (Diagram/Table) */
+.horizontal-resize-handle {
+  transition: background-color 0.2s;
+  z-index: 50 !important;
+}
+
+.horizontal-resize-handle .handle-lines {
+  width: 32px;
+  /* Good width */
+  height: 4px;
+  /* Thin pill */
+  background-color: #d1d5db;
+  /* Gray-300 */
+  border-radius: 99px;
+  /* Full pill */
+  opacity: 1;
+  /* Always visible */
+  transition: background-color 0.2s;
+}
+
+.horizontal-resize-handle:hover .handle-lines {
+  background-color: var(--border-focus);
+  /* Blue on hover */
 }
