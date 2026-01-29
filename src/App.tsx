@@ -3,6 +3,7 @@ import { Sidebar } from './components/Sidebar';
 import { ComponentViewer } from './components/ComponentViewer';
 import { ThemeProvider } from './context/ThemeContext';
 import { useMediaQuery } from './hooks/useMediaQuery';
+import { HelpModal } from './components/HelpModal';
 import './index.css';
 
 function AppContent() {
@@ -11,6 +12,7 @@ function AppContent() {
   // Responsive State
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // Sync sidebar open state with mobile changes
   useEffect(() => {
@@ -157,6 +159,8 @@ function AppContent() {
       color: 'var(--text-primary)',
       position: 'relative' // For backdrop context
     }}>
+      {/* Help Modal (App Level to avoid clipping) */}
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
       {/* Mobile Backdrop */}
       {isMobile && isSidebarOpen && (
@@ -170,12 +174,14 @@ function AppContent() {
       <div
         className={`sidebar-container ${isMobile ? 'mobile' : ''} ${isSidebarOpen ? 'open' : 'closed'}`}
         style={{
-          width: isMobile ? '80%' : sidebarWidth,
+          width: isMobile ? '80%' : (isSidebarOpen ? sidebarWidth : 0),
           flexShrink: 0,
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: 'var(--bg-sidebar)',
-          borderRight: '1px solid var(--border-color)'
+          borderRight: (!isMobile && isSidebarOpen) ? '1px solid var(--border-color)' : 'none',
+          overflow: 'hidden', // Hide content when width is 0 (Desktop)
+          transition: isMobile ? 'none' : 'width 0.3s ease' // Smooth transition on desktop
         }}
       >
         <Sidebar
@@ -184,6 +190,8 @@ function AppContent() {
           onToggleCompareMode={toggleCompareMode}
           selectedPaths={selectedPaths}
           onMultiSelect={handleMultiSelect}
+          onOpenHelp={() => setIsHelpOpen(true)}
+          onClose={() => setIsSidebarOpen(false)}
         />
       </div>
 
@@ -198,7 +206,7 @@ function AppContent() {
             zIndex: 100,
             cursor: 'col-resize',
             position: 'relative',
-            display: 'flex',
+            display: isSidebarOpen ? 'flex' : 'none', // Hide handle when closed
             justifyContent: 'center'
           }}
         />
@@ -206,86 +214,125 @@ function AppContent() {
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, margin: 0, backgroundColor: 'var(--bg-panel)', overflow: 'hidden', position: 'relative' }}>
 
-        {/* Hamburger Menu (Mobile Only) */}
-        {isMobile && !isSidebarOpen && (
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="hamburger-button"
-            title="Open Menu"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-        )}
+        {/* Floating Hamburger Removed - now integrated into headers */}
 
         {isCompareMode ? (
-          <div
-            ref={compareContainerRef}
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              height: '100%',
-              width: '100%',
-              overflow: isMobile ? 'auto' : 'hidden' // Allow scroll on mobile
-            }}
-          >
-            {Array.from(selectedPaths).length > 0 ? (
-              Array.from(selectedPaths).map((path, index) => (
-                <div key={path} style={{
-                  width: isMobile ? '100%' : `${columnWidths[index]}%`, // Stack or scroll on mobile
-                  flexShrink: isMobile ? 0 : 1, // Don't shrink on mobile
-                  minWidth: isMobile ? '100%' : '50px',
-                  height: '100%',
-                  borderRight: '1px solid var(--border-color)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  position: 'relative'
-                }}>
-                  <ComponentViewer path={path} />
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* Compare Mode Header */}
 
-                  {/* Column Resize Handle - Desktop Only */}
-                  {!isMobile && index < Array.from(selectedPaths).length - 1 && (
-                    <div
-                      onMouseDown={startResizingCol(index)}
-                      className="column-resize-handle"
-                      style={{
-                        width: '12px',
-                        right: '-6px',
-                        top: 0, bottom: 0,
-                        position: 'absolute',
-                        cursor: 'col-resize',
-                        zIndex: 100
-                      }}
+
+            <div
+              ref={compareContainerRef}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                flex: 1,
+                overflowX: isMobile ? 'auto' : 'hidden', // Allow scroll on mobile
+                overflowY: 'hidden'
+              }}
+            >
+              {Array.from(selectedPaths).length > 0 ? (
+                Array.from(selectedPaths).map((path, index) => (
+                  <div key={path} style={{
+                    width: isMobile ? '100%' : `${columnWidths[index]}%`, // Stack or scroll on mobile
+                    flexShrink: isMobile ? 0 : 1, // Don't shrink on mobile
+                    minWidth: isMobile ? '100%' : '50px',
+                    height: '100%',
+                    borderRight: '1px solid var(--border-color)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative'
+                  }}>
+                    <ComponentViewer
+                      path={path}
+                      isSidebarOpen={isSidebarOpen}
+                      onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                     />
-                  )}
+                    {/* Note: ComponentViewer inside Compare Mode will have its OWN header too. 
+                            If we want a "Clean" compare, we might need to tell ComponentViewer to hide its header? 
+                            OR just let it have headers (Component Name is useful). 
+                            If Component Viewer has header, we don't need the top "Compare Mode" header? 
+                            No, we need the "Menu" button somewhere if Sidebar is closed.
+                            
+                            Actually, if ComponentViewer handles the menu button, and we render multiple ComponentViewers...
+                            We will have multiple Menu buttons? Yes.
+                            That looks bad.
+                            
+                            BETTER: 
+                            In Compare Mode, render a single Top Header for the APP.
+                            Then render ComponentViewers WITHOUT their header (or with a reduced header).
+                            BUT ComponentViewer handles menu button now.
+                        */ }
+                  </div>
+                ))
+              ) : (
+                <div style={{ padding: '20px', color: 'var(--text-secondary)' }}>
+                  Select components from the sidebar to compare.
                 </div>
-              ))
-            ) : (
-              <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
-                Select components to compare.
-              </div>
-            )}
+              )}
+            </div>
           </div>
         ) : (
           selectedPath ? (
-            <ComponentViewer path={selectedPath} />
+            <ComponentViewer
+              path={selectedPath}
+              isSidebarOpen={isSidebarOpen}
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
           ) : (
             <div style={{
               height: '100%',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-secondary)'
+              flexDirection: 'column',
+              backgroundColor: 'var(--bg-panel)'
             }}>
-              Select a component from the sidebar to view details.
+              {/* Empty State Header for Menu Button */}
+              <div style={{
+                padding: '8px 16px',
+                height: '38px', // Match other headers
+                display: 'flex',
+                alignItems: 'center',
+                borderBottom: '1px solid transparent' // Maintain height consistency
+              }}>
+                {!isSidebarOpen && (
+                  <button
+                    onClick={() => setIsSidebarOpen(true)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      margin: '-4px'
+                    }}
+                    title="Open Menu"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="3" y1="12" x2="21" y2="12"></line>
+                      <line x1="3" y1="6" x2="21" y2="6"></line>
+                      <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-secondary)'
+              }}>
+                Select a component from the sidebar to view details.
+              </div>
             </div>
           )
         )}
-      </main>
-    </div>
+
+      </main >
+    </div >
   );
 }
 

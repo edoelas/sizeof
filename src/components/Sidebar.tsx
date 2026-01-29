@@ -11,6 +11,8 @@ interface SidebarProps {
     onToggleCompareMode: () => void;
     selectedPaths: Set<string>;
     onMultiSelect: (path: string, selected: boolean) => void;
+    onOpenHelp: () => void;
+    onClose: () => void;
 }
 
 interface TreeNodeProps {
@@ -92,19 +94,22 @@ const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand, isComp
     );
 };
 
-import { HelpModal } from './HelpModal';
+// Remove HelpModal import if unused, or keep if needed (but we are moving it)
+// import { HelpModal } from './HelpModal'; // Moving to App
 
 export const Sidebar: React.FC<SidebarProps> = ({
     onSelect,
     isCompareMode,
     onToggleCompareMode,
     selectedPaths,
-    onMultiSelect
+    onMultiSelect,
+    onOpenHelp,
+    onClose
 }) => {
     const [catalog, setCatalog] = useState<CatalogItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
-    const [isHelpOpen, setIsHelpOpen] = useState(false);
+    // Removed isHelpOpen state
 
     useEffect(() => {
         fetchCatalog().then((data) => {
@@ -175,10 +180,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <div className="sidebar">
-            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
             <div className="sidebar-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <h2 style={{ margin: 0 }}>Components</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {/* Close Button (Unified behavior) */}
+                        <button
+                            onClick={onClose}
+                            className="theme-toggle"
+                            title="Close Sidebar"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                                <path d="M15 9l-3 3 3 3" /> {/* Left arrow hint */}
+                            </svg>
+                        </button>
+                        <h2 style={{ margin: 0 }}>Components</h2>
+                    </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         {/* Compare Toggle Button */}
                         <button
@@ -199,7 +217,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                         {/* Help Button */}
                         <button
-                            onClick={() => setIsHelpOpen(true)}
+                            onClick={onOpenHelp}
                             className="theme-toggle"
                             title="Help & Instructions"
                         >

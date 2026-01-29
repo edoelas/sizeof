@@ -26,8 +26,12 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 color: 'var(--text-primary)',
                 padding: '24px',
                 borderRadius: '8px',
-                maxWidth: '500px',
-                width: '90%',
+                maxWidth: '600px', // Slightly wider max
+                width: '95%', // Wider on mobile
+                maxHeight: '90vh', // Prevent overflow on small screens
+                overflowY: 'auto', // Enable scrolling if tall
+                WebkitOverflowScrolling: 'touch', // SMOOTH SCROLLING FOR IOS
+                overscrollBehavior: 'contain', // Prevent body scroll chaining
                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                 border: '1px solid var(--border-color)',
                 position: 'relative'

@@ -7,9 +7,11 @@ import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface ComponentViewerProps {
     path: string;
+    isSidebarOpen: boolean;
+    onToggleSidebar: () => void;
 }
 
-export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
+export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSidebarOpen, onToggleSidebar }) => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [data, setData] = useState<ComponentData | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -40,8 +42,23 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
             });
     }, [path]);
 
+    // Helper for title
+    const renderTitle = () => {
+        if (loading) return <span>Loading...</span>;
+        if (error) return <span style={{ color: 'red' }}>Error</span>;
+        if (!data) return <span>Select a Component</span>;
+        return (
+            <>
+                {data.config.name}
+                <span style={{ fontWeight: 'normal', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    {data.config.standard}
+                </span>
+            </>
+        );
+    };
+
     // Resizing State
-    const [topPaneHeight, setTopPaneHeight] = useState(45); // percentage
+    const [topPaneHeight, setTopPaneHeight] = useState(33); // percentage
     const [dragState, setDragState] = useState<{ startY: number, startHeight: number } | null>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -93,10 +110,10 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
         setSelectedRowData(row);
     };
 
-    if (loading) return <div>Loading component data...</div>;
-    if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
-    if (!data) return null;
+    // Diagram Visibility State
+    const [isDiagramVisible, setIsDiagramVisible] = useState(true);
 
+    // Main Render
     return (
         <div
             ref={containerRef}
@@ -112,79 +129,153 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
                 userSelect: dragState ? 'none' : 'auto'
             }}
         >
-            {/* Top Pane: Diagram */}
-            <div style={{
-                flexBasis: `${topPaneHeight}%`,
-                flexGrow: 0,
-                flexShrink: 0,
-                minHeight: '100px',
+            {/* Header - Fixed at Top */}
+            <h3 style={{
+                margin: 0,
+                padding: '8px 16px',
+                // paddingLeft logic removed
+                fontSize: '13px',
+                color: 'var(--text-primary)',
+                backgroundColor: 'var(--bg-sub-header)',
                 borderBottom: '1px solid var(--border-color)',
-                backgroundColor: 'var(--bg-grid)',
-                position: 'relative',
+                zIndex: 1,
                 display: 'flex',
-                flexDirection: 'column'
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+                flexShrink: 0
             }}>
-                <div style={{
-                    position: 'absolute',
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    // Technical Grid Pattern
-                    backgroundImage: 'linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)',
-                    backgroundSize: '20px 20px',
-                    opacity: 0.5,
-                    pointerEvents: 'none'
-                }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {/* Integrated Hamburger Button */}
+                    {!isSidebarOpen && (
+                        <button
+                            onClick={onToggleSidebar}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'var(--text-secondary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '4px',
+                                borderRadius: '4px',
+                                margin: '-4px' // Negative margin to align with padding
+                            }}
+                            title="Open Menu"
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--row-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                    )}
 
-                <h3 style={{
-                    margin: 0,
-                    padding: '8px 16px',
-                    paddingLeft: isMobile ? '50px' : '16px', // Avoid hamburger overlap
-                    fontSize: '13px',
-                    color: 'var(--text-primary)',
-                    backgroundColor: 'var(--bg-sub-header)',
-                    borderBottom: '1px solid var(--border-color)',
-                    zIndex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                }}>
-                    {data.config.name}
-                    <span style={{ fontWeight: 'normal', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                        {data.config.standard}
-                    </span>
-                </h3>
-
-                <div style={{ flex: 1, overflow: 'hidden', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-                    <SvgRenderer svgContent={data.svg} data={selectedRowData} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {renderTitle()}
+                    </div>
                 </div>
-            </div>
 
-            {/* Resize Handle - Simple */}
-            <div
-                onMouseDown={handleMouseDown}
-                className="horizontal-resize-handle"
-                style={{
-                    height: '12px',
-                    margin: '-6px 0',
-                    cursor: 'row-resize',
-                    zIndex: 100, // Ensure above sticky headers
-                    position: 'relative'
-                }}
-            />
+                {/* Diagram Toggle Button (Only show if data available) */}
+                {data && (
+                    <button
+                        onClick={() => setIsDiagramVisible(!isDiagramVisible)}
+                        title={isDiagramVisible ? 'Hide Diagram' : 'Show Diagram'}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--text-secondary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '4px',
+                            borderRadius: '4px'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--row-hover)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                        {isDiagramVisible ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 15l-6-6-6 6" />
+                            </svg>
+                        ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        )}
+                    </button>
+                )}
+            </h3>
+
+            {/* Top Pane: Diagram (Collapsible) */}
+            {data && isDiagramVisible && (
+                <div style={{
+                    flexBasis: `${topPaneHeight}%`,
+                    flexGrow: 0,
+                    flexShrink: 0,
+                    minHeight: '100px',
+                    borderBottom: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-grid)',
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        // Technical Grid Pattern
+                        backgroundImage: 'linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)',
+                        backgroundSize: '20px 20px',
+                        opacity: 0.5,
+                        pointerEvents: 'none'
+                    }} />
+
+                    <div style={{ flex: 1, overflow: 'hidden', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+                        <SvgRenderer svgContent={data.svg} data={selectedRowData} />
+                    </div>
+                </div>
+            )}
+
+            {/* Resize Handle - Simple (Visible only when diagram is shown) */}
+            {data && isDiagramVisible && (
+                <div
+                    onMouseDown={handleMouseDown}
+                    className="horizontal-resize-handle"
+                    style={{
+                        height: '12px',
+                        margin: '-6px 0',
+                        cursor: 'row-resize',
+                        zIndex: 100, // Ensure above sticky headers
+                        position: 'relative'
+                    }}
+                />
+            )}
 
             {/* Bottom Pane: Data Table */}
-            <div style={{
-                flex: 1,
-                overflow: 'hidden',
-                backgroundColor: 'var(--bg-panel)',
-                display: 'flex',
-                flexDirection: 'column'
-            }}>
-                <DataTable
-                    config={data.config}
-                    selectedRowIndex={selectedRowIndex}
-                    onRowSelect={handleRowSelect}
-                />
-            </div>
+            {data && (
+                <div style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    backgroundColor: 'var(--bg-panel)',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    <DataTable
+                        config={data.config}
+                        selectedRowIndex={selectedRowIndex}
+                        onRowSelect={handleRowSelect}
+                    />
+                </div>
+            )}
+
+            {/* Empty State / Loading / Error Body */}
+            {!data && (
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
+                    {loading ? 'Loading...' : (error ? `Error: ${error}` : 'Select a component from the sidebar.')}
+                </div>
+            )}
         </div>
     );
 };
