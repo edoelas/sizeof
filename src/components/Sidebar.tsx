@@ -7,15 +7,22 @@ import './Sidebar.css';
 
 interface SidebarProps {
     onSelect: (path: string) => void;
+    isCompareMode: boolean;
+    onToggleCompareMode: () => void;
+    selectedPaths: Set<string>;
+    onMultiSelect: (path: string, selected: boolean) => void;
 }
 
 interface TreeNodeProps {
     item: CatalogItem;
     onSelect: (path: string) => void;
     forceExpand?: boolean;
+    isCompareMode: boolean;
+    selectedPaths: Set<string>;
+    onMultiSelect: (path: string, selected: boolean) => void;
 }
 
-const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand }) => {
+const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand, isCompareMode, selectedPaths, onMultiSelect }) => {
     const [isOpen, setIsOpen] = useState(false);
     const hasChildren = item.children && item.children.length > 0;
 
@@ -31,7 +38,19 @@ const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand }) => {
         if (hasChildren) {
             setIsOpen(!isOpen);
         } else if (item.path) {
-            onSelect(item.path);
+            if (isCompareMode) {
+                // In compare mode, clicking the label also toggles the checkbox
+                onMultiSelect(item.path, !selectedPaths.has(item.path));
+            } else {
+                onSelect(item.path);
+            }
+        }
+    };
+
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.stopPropagation();
+        if (item.path) {
+            onMultiSelect(item.path, e.target.checked);
         }
     };
 
@@ -39,6 +58,18 @@ const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand }) => {
         <div className="tree-node">
             <div className={`node-label ${hasChildren ? 'folder' : 'file'}`} onClick={handleClick}>
                 {hasChildren && <span className={`arrow ${isOpen ? 'open' : ''}`}>▶</span>}
+
+                {/* Checkbox for compare mode - only for leaf nodes */}
+                {!hasChildren && isCompareMode && (
+                    <input
+                        type="checkbox"
+                        checked={item.path ? selectedPaths.has(item.path) : false}
+                        onChange={handleCheckboxChange}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ marginRight: '8px' }}
+                    />
+                )}
+
                 {item.name}
             </div>
             {/* If expanded or forced open, show children */}
@@ -50,6 +81,9 @@ const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand }) => {
                             item={child}
                             onSelect={onSelect}
                             forceExpand={forceExpand} // Pass it down
+                            isCompareMode={isCompareMode}
+                            selectedPaths={selectedPaths}
+                            onMultiSelect={onMultiSelect}
                         />
                     ))}
                 </div>
@@ -58,7 +92,13 @@ const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand }) => {
     );
 };
 
-export const Sidebar: React.FC<SidebarProps> = ({ onSelect }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+    onSelect,
+    isCompareMode,
+    onToggleCompareMode,
+    selectedPaths,
+    onMultiSelect
+}) => {
     const [catalog, setCatalog] = useState<CatalogItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
@@ -77,12 +117,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelect }) => {
         if (!searchTerm.trim()) return catalog;
 
         // 1. Setup Fuse
-        // We only want to search "Leaf Nodes" (Components). 
-        // Folder matching is annoying if it returns empty folders. 
-        // If a folder's name matches, we only want to show it if it contains matching components? 
-        // Or simpler: We essentially search for components, and the tree just shows the path to them.
-        // The user explicitly requested to search using the "full path".
-
         const getLeafNodes = (nodes: CatalogItem[]): CatalogItem[] => {
             return nodes.reduce((acc, node) => {
                 if (node.children && node.children.length > 0) {
@@ -141,30 +175,52 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelect }) => {
             <div className="sidebar-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <h2 style={{ margin: 0 }}>Components</h2>
-                    <button
-                        onClick={toggleTheme}
-                        className="theme-toggle"
-                        title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-                    >
-                        {theme === 'light' ? (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        {/* Compare Toggle Button */}
+                        <button
+                            onClick={onToggleCompareMode}
+                            className="theme-toggle"
+                            title={isCompareMode ? 'Exit Compare Mode' : 'Compare Mode'}
+                            style={{
+                                color: isCompareMode ? 'var(--text-accent)' : undefined,
+                                backgroundColor: isCompareMode ? 'var(--row-selected)' : undefined
+                            }}
+                        >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                <rect x="2" y="3" width="9" height="18" rx="2" ry="2"></rect>
+                                <rect x="13" y="3" width="9" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="3" x2="12" y2="21" style={{ stroke: 'transparent' }}></line> {/* Spacer concept, but rects are enough */}
                             </svg>
-                        ) : (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="5"></circle>
-                                <line x1="12" y1="1" x2="12" y2="3"></line>
-                                <line x1="12" y1="21" x2="12" y2="23"></line>
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                <line x1="1" y1="12" x2="3" y2="12"></line>
-                                <line x1="21" y1="12" x2="23" y2="12"></line>
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                            </svg>
-                        )}
-                    </button>
+                        </button>
+
+                        <button
+                            onClick={toggleTheme}
+                            className="theme-toggle"
+                            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                        >
+                            {theme === 'light' ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                            ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="5"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                </svg>
+                            )}
+                        </button>
+                    </div>
                 </div>
+
+                {/* Removed old text button */}
+
                 <input
                     type="text"
                     placeholder="Search..."
@@ -183,6 +239,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelect }) => {
                             item={item}
                             onSelect={onSelect}
                             forceExpand={!!searchTerm.trim()}
+                            isCompareMode={isCompareMode}
+                            selectedPaths={selectedPaths}
+                            onMultiSelect={onMultiSelect}
                         />
                     ))
                 )}
