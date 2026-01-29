@@ -2,10 +2,20 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { ComponentViewer } from './components/ComponentViewer';
 import { ThemeProvider } from './context/ThemeContext';
+import { useMediaQuery } from './hooks/useMediaQuery';
 import './index.css';
 
 function AppContent() {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
+
+  // Responsive State
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+
+  // Sync sidebar open state with mobile changes
+  useEffect(() => {
+    setIsSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   // Sidebar Width State
   const [sidebarWidth, setSidebarWidth] = useState(260);
@@ -54,15 +64,23 @@ function AppContent() {
     });
   }, []);
 
+  const handleSidebarSelect = useCallback((path: string) => {
+    setSelectedPath(path);
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  }, [isMobile]);
+
   // START HANDLERS
   const startResizingSidebar = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    if (isMobile) return; // No resize on mobile
     setResizeState({
       type: 'sidebar',
       startX: e.clientX,
       startWidths: [sidebarWidth]
     });
-  }, [sidebarWidth]);
+  }, [sidebarWidth, isMobile]);
 
   const startResizingCol = useCallback((index: number) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -127,8 +145,6 @@ function AppContent() {
   }, [resizeState, handleGlobalMouseMove, stopResizing]);
 
 
-
-
   return (
     <div style={{
       display: 'flex',
@@ -138,11 +154,32 @@ function AppContent() {
       cursor: resizeState ? 'col-resize' : 'default',
       userSelect: resizeState ? 'none' : 'auto',
       backgroundColor: 'var(--bg-app)',
-      color: 'var(--text-primary)'
+      color: 'var(--text-primary)',
+      position: 'relative' // For backdrop context
     }}>
-      <div style={{ width: sidebarWidth, flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-sidebar)', borderRight: '1px solid var(--border-color)' }}>
+
+      {/* Mobile Backdrop */}
+      {isMobile && isSidebarOpen && (
+        <div
+          className="mobile-backdrop"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <div
+        className={`sidebar-container ${isMobile ? 'mobile' : ''} ${isSidebarOpen ? 'open' : 'closed'}`}
+        style={{
+          width: isMobile ? '80%' : sidebarWidth,
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: 'var(--bg-sidebar)',
+          borderRight: '1px solid var(--border-color)'
+        }}
+      >
         <Sidebar
-          onSelect={setSelectedPath}
+          onSelect={handleSidebarSelect}
           isCompareMode={isCompareMode}
           onToggleCompareMode={toggleCompareMode}
           selectedPaths={selectedPaths}
@@ -150,22 +187,40 @@ function AppContent() {
         />
       </div>
 
-      {/* Vertical Resize Handle (Sidebar) - Simple */}
-      <div
-        onMouseDown={startResizingSidebar}
-        className="vertical-resize-handle"
-        style={{
-          width: '12px',
-          margin: '0 -6px',
-          zIndex: 100,
-          cursor: 'col-resize',
-          position: 'relative',
-          display: 'flex',
-          justifyContent: 'center'
-        }}
-      />
+      {/* Vertical Resize Handle (Sidebar) - Simple (Desktop Only) */}
+      {!isMobile && (
+        <div
+          onMouseDown={startResizingSidebar}
+          className="vertical-resize-handle"
+          style={{
+            width: '12px',
+            margin: '0 -6px',
+            zIndex: 100,
+            cursor: 'col-resize',
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'center'
+          }}
+        />
+      )}
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, margin: 0, backgroundColor: 'var(--bg-panel)', overflow: 'hidden' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, margin: 0, backgroundColor: 'var(--bg-panel)', overflow: 'hidden', position: 'relative' }}>
+
+        {/* Hamburger Menu (Mobile Only) */}
+        {isMobile && !isSidebarOpen && (
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="hamburger-button"
+            title="Open Menu"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        )}
+
         {isCompareMode ? (
           <div
             ref={compareContainerRef}
@@ -174,24 +229,25 @@ function AppContent() {
               flexDirection: 'row',
               height: '100%',
               width: '100%',
-              overflow: 'hidden'
+              overflow: isMobile ? 'auto' : 'hidden' // Allow scroll on mobile
             }}
           >
             {Array.from(selectedPaths).length > 0 ? (
               Array.from(selectedPaths).map((path, index) => (
                 <div key={path} style={{
-                  width: `${columnWidths[index]}%`,
+                  width: isMobile ? '100%' : `${columnWidths[index]}%`, // Stack or scroll on mobile
+                  flexShrink: isMobile ? 0 : 1, // Don't shrink on mobile
+                  minWidth: isMobile ? '100%' : '50px',
                   height: '100%',
                   borderRight: '1px solid var(--border-color)',
                   display: 'flex',
                   flexDirection: 'column',
-                  minWidth: '50px',
                   position: 'relative'
                 }}>
                   <ComponentViewer path={path} />
 
-                  {/* Column Resize Handle - Simple */}
-                  {index < Array.from(selectedPaths).length - 1 && (
+                  {/* Column Resize Handle - Desktop Only */}
+                  {!isMobile && index < Array.from(selectedPaths).length - 1 && (
                     <div
                       onMouseDown={startResizingCol(index)}
                       className="column-resize-handle"

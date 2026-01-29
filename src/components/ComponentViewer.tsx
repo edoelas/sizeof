@@ -3,12 +3,14 @@ import { fetchComponentData } from '../utils/dataLoader';
 import type { ComponentData } from '../types';
 import { SvgRenderer } from './SvgRenderer';
 import { DataTable } from './DataTable';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 interface ComponentViewerProps {
     path: string;
 }
 
 export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
+    const isMobile = useMediaQuery('(max-width: 768px)');
     const [data, setData] = useState<ComponentData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -135,12 +137,21 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
                 <h3 style={{
                     margin: 0,
                     padding: '8px 16px',
+                    paddingLeft: isMobile ? '50px' : '16px', // Avoid hamburger overlap
                     fontSize: '13px',
                     color: 'var(--text-primary)',
                     backgroundColor: 'var(--bg-sub-header)',
                     borderBottom: '1px solid var(--border-color)',
-                    zIndex: 1
-                }}>DIAGRAM PREVIEW</h3>
+                    zIndex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}>
+                    {data.config.name}
+                    <span style={{ fontWeight: 'normal', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {data.config.standard}
+                    </span>
+                </h3>
 
                 <div style={{ flex: 1, overflow: 'hidden', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
                     <SvgRenderer svgContent={data.svg} data={selectedRowData} />

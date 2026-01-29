@@ -11,7 +11,7 @@ interface DataTableProps {
 export const DataTable: React.FC<DataTableProps> = ({ config, selectedRowIndex, onRowSelect }) => {
     return (
         <div className="table-container">
-            <h3>{config.name} <span style={{ fontWeight: 'normal', fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '8px' }}>{config.standard}</span></h3>
+
             <div className="table-scroll-area">
                 <table className="component-table">
                     <thead>
