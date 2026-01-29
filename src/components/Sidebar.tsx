@@ -92,6 +92,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand, isComp
     );
 };
 
+import { HelpModal } from './HelpModal';
+
 export const Sidebar: React.FC<SidebarProps> = ({
     onSelect,
     isCompareMode,
@@ -102,6 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const [catalog, setCatalog] = useState<CatalogItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     useEffect(() => {
         fetchCatalog().then((data) => {
@@ -172,6 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <div className="sidebar">
+            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
             <div className="sidebar-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <h2 style={{ margin: 0 }}>Components</h2>
@@ -190,6 +194,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 <rect x="2" y="3" width="9" height="18" rx="2" ry="2"></rect>
                                 <rect x="13" y="3" width="9" height="18" rx="2" ry="2"></rect>
                                 <line x1="12" y1="3" x2="12" y2="21" style={{ stroke: 'transparent' }}></line> {/* Spacer concept, but rects are enough */}
+                            </svg>
+                        </button>
+
+                        {/* Help Button */}
+                        <button
+                            onClick={() => setIsHelpOpen(true)}
+                            className="theme-toggle"
+                            title="Help & Instructions"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
                             </svg>
                         </button>
 
