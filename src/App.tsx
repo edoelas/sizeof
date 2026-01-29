@@ -11,6 +11,7 @@ function AppContent() {
 
   // Responsive State
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const isLandscape = useMediaQuery('(orientation: landscape)');
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -29,15 +30,14 @@ function AppContent() {
   const compareContainerRef = useRef<HTMLDivElement>(null);
 
   // Simplified Resize State
-  // We store initial values on start to calculate deltas accurately without drift
   const [resizeState, setResizeState] = useState<{
     type: 'sidebar' | 'column';
-    index?: number; // for column
+    index?: number;
     startX: number;
-    startWidths: number[]; // for column: [left, right] widths; for sidebar: [width]
+    startWidths: number[];
   } | null>(null);
 
-  // Sync column widths when selection changes
+  // Sync column widths
   useEffect(() => {
     const count = selectedPaths.size;
     if (count > 0) {
@@ -76,7 +76,7 @@ function AppContent() {
   // START HANDLERS
   const startResizingSidebar = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    if (isMobile) return; // No resize on mobile
+    if (isMobile) return;
     setResizeState({
       type: 'sidebar',
       startX: e.clientX,
@@ -146,7 +146,6 @@ function AppContent() {
     };
   }, [resizeState, handleGlobalMouseMove, stopResizing]);
 
-
   return (
     <div style={{
       display: 'flex',
@@ -157,12 +156,10 @@ function AppContent() {
       userSelect: resizeState ? 'none' : 'auto',
       backgroundColor: 'var(--bg-app)',
       color: 'var(--text-primary)',
-      position: 'relative' // For backdrop context
+      position: 'relative'
     }}>
-      {/* Help Modal (App Level to avoid clipping) */}
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
-      {/* Mobile Backdrop */}
       {isMobile && isSidebarOpen && (
         <div
           className="mobile-backdrop"
@@ -170,7 +167,6 @@ function AppContent() {
         />
       )}
 
-      {/* Sidebar Container */}
       <div
         className={`sidebar-container ${isMobile ? 'mobile' : ''} ${isSidebarOpen ? 'open' : 'closed'}`}
         style={{
@@ -180,8 +176,8 @@ function AppContent() {
           flexDirection: 'column',
           backgroundColor: 'var(--bg-sidebar)',
           borderRight: (!isMobile && isSidebarOpen) ? '1px solid var(--border-color)' : 'none',
-          overflow: 'hidden', // Hide content when width is 0 (Desktop)
-          transition: isMobile ? 'none' : 'width 0.3s ease' // Smooth transition on desktop
+          overflow: 'hidden',
+          transition: isMobile ? 'none' : 'width 0.3s ease'
         }}
       >
         <Sidebar
@@ -195,7 +191,6 @@ function AppContent() {
         />
       </div>
 
-      {/* Vertical Resize Handle (Sidebar) - Simple (Desktop Only) */}
       {!isMobile && (
         <div
           onMouseDown={startResizingSidebar}
@@ -206,7 +201,7 @@ function AppContent() {
             zIndex: 100,
             cursor: 'col-resize',
             position: 'relative',
-            display: isSidebarOpen ? 'flex' : 'none', // Hide handle when closed
+            display: isSidebarOpen ? 'flex' : 'none',
             justifyContent: 'center'
           }}
         />
@@ -214,12 +209,8 @@ function AppContent() {
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, margin: 0, backgroundColor: 'var(--bg-panel)', overflow: 'hidden', position: 'relative' }}>
 
-        {/* Floating Hamburger Removed - now integrated into headers */}
-
         {isCompareMode ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            {/* Compare Mode Header */}
-
 
             <div
               ref={compareContainerRef}
@@ -227,16 +218,16 @@ function AppContent() {
                 display: 'flex',
                 flexDirection: 'row',
                 flex: 1,
-                overflowX: isMobile ? 'auto' : 'hidden', // Allow scroll on mobile
+                overflowX: (isMobile && !isLandscape) ? 'auto' : 'hidden',
                 overflowY: 'hidden'
               }}
             >
               {Array.from(selectedPaths).length > 0 ? (
                 Array.from(selectedPaths).map((path, index) => (
                   <div key={path} style={{
-                    width: isMobile ? '100%' : `${columnWidths[index]}%`, // Stack or scroll on mobile
-                    flexShrink: isMobile ? 0 : 1, // Don't shrink on mobile
-                    minWidth: isMobile ? '100%' : '50px',
+                    width: (isMobile && !isLandscape) ? '100%' : `${columnWidths[index]}%`,
+                    flexShrink: (isMobile && !isLandscape) ? 0 : 1,
+                    minWidth: (isMobile && !isLandscape) ? '100%' : '50px',
                     height: '100%',
                     borderRight: '1px solid var(--border-color)',
                     display: 'flex',
@@ -249,7 +240,7 @@ function AppContent() {
                       onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                     />
 
-                    {!isMobile && index < Array.from(selectedPaths).length - 1 && (
+                    {(!isMobile || isLandscape) && index < Array.from(selectedPaths).length - 1 && (
                       <div
                         onMouseDown={startResizingCol(index)}
                         className="column-resize-handle"
@@ -264,21 +255,6 @@ function AppContent() {
                         }}
                       />
                     )}
-                    {/* Note: ComponentViewer inside Compare Mode will have its OWN header too. 
-                            If we want a "Clean" compare, we might need to tell ComponentViewer to hide its header? 
-                            OR just let it have headers (Component Name is useful). 
-                            If Component Viewer has header, we don't need the top "Compare Mode" header? 
-                            No, we need the "Menu" button somewhere if Sidebar is closed.
-                            
-                            Actually, if ComponentViewer handles the menu button, and we render multiple ComponentViewers...
-                            We will have multiple Menu buttons? Yes.
-                            That looks bad.
-                            
-                            BETTER: 
-                            In Compare Mode, render a single Top Header for the APP.
-                            Then render ComponentViewers WITHOUT their header (or with a reduced header).
-                            BUT ComponentViewer handles menu button now.
-                        */ }
                   </div>
                 ))
               ) : (
@@ -346,9 +322,8 @@ function AppContent() {
             </div>
           )
         )}
-
-      </main >
-    </div >
+      </main>
+    </div>
   );
 }
 
