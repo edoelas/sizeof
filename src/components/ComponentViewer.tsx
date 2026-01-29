@@ -167,10 +167,8 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--row-hover)'}
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="3" y1="12" x2="21" y2="12"></line>
-                                <line x1="3" y1="6" x2="21" y2="6"></line>
-                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                             </svg>
                         </button>
                     )}
@@ -208,22 +206,15 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--row-hover)'}
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
                                 {isTableVisible ? (
-                                    // Icon for "Maximize Diagram" (Expand)
-                                    <>
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <polyline points="15 3 21 3 21 9"></polyline>
-                                        <polyline points="9 21 3 21 3 15"></polyline>
-                                        <line x1="21" y1="3" x2="14" y2="10"></line>
-                                        <line x1="3" y1="21" x2="10" y2="14"></line>
-                                    </>
+                                    // Icon for "Maximize Diagram" (Table Visible -> Expand/Maximize)
+                                    // User provided "Maximize" icon (arrows out)
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                                 ) : (
-                                    // Icon for "Show Table" (Restore)
-                                    <>
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <line x1="3" y1="15" x2="21" y2="15"></line>
-                                    </>
+                                    // Icon for "Show Table" (Restore/Minimize)
+                                    // User provided "Minimize" icon (arrows in)
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25" />
                                 )}
                             </svg>
                         </button>
@@ -256,21 +247,13 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--row-hover)'}
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
                                 {isDiagramVisible ? (
-                                    // Icon for "Hide Diagram"
-                                    <>
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <path d="M3 9h18" /> {/* Split hint */}
-                                        <path d="M15 9l-3-3-3 3" /> {/* Up Arrow hint (Push up/hide) */}
-                                    </>
+                                    // Hide Diagram (Chevron Up) - User provided "Hide" icon
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
                                 ) : (
-                                    // Icon for "Show Diagram"
-                                    <>
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                        <polyline points="21 15 16 10 5 21"></polyline> {/* Image hint */}
-                                    </>
+                                    // Show Diagram (Chevron Down) - User provided "Show" icon
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                 )}
                             </svg>
                         </button>
@@ -301,7 +284,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                         pointerEvents: 'none'
                     }} />
 
-                    <div style={{ flex: 1, overflow: 'hidden', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+                    <div style={{ flex: 1, overflow: 'hidden', padding: isTableVisible ? '16px' : '0', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
                         <SvgRenderer svgContent={data.svg} data={selectedRowData} />
                     </div>
                 </div>
