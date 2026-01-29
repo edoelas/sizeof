@@ -16,11 +16,6 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
     const [selectedRowData, setSelectedRowData] = useState<Record<string, string> | null>(null);
 
-    // Resizing State
-    const [topPaneHeight, setTopPaneHeight] = useState(45); // percentage
-    const [isDragging, setIsDragging] = useState(false);
-    const containerRef = React.useRef<HTMLDivElement>(null);
-
     useEffect(() => {
         setLoading(true);
         setError(null);
@@ -43,31 +38,42 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
             });
     }, [path]);
 
+    // Resizing State
+    const [topPaneHeight, setTopPaneHeight] = useState(45); // percentage
+    const [dragState, setDragState] = useState<{ startY: number, startHeight: number } | null>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
     // Resizing Handlers
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
-        setIsDragging(true);
-    }, []);
+        setDragState({
+            startY: e.clientY,
+            startHeight: topPaneHeight
+        });
+    }, [topPaneHeight]);
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (!isDragging || !containerRef.current) return;
+        if (!dragState || !containerRef.current) return;
 
         const containerRect = containerRef.current.getBoundingClientRect();
-        // Calculate percentage: (MouseY - ContainerTop) / ContainerHeight * 100
-        let newHeight = ((e.clientY - containerRect.top) / containerRect.height) * 100;
+        // Calculate delta percentage
+        const deltaPixels = e.clientY - dragState.startY;
+        const deltaPercent = (deltaPixels / containerRect.height) * 100;
+
+        let newHeight = dragState.startHeight + deltaPercent;
 
         // Clamp values (min 10%, max 90%)
         newHeight = Math.max(10, Math.min(90, newHeight));
         setTopPaneHeight(newHeight);
-    }, [isDragging]);
+    }, [dragState]);
 
     const handleMouseUp = useCallback(() => {
-        setIsDragging(false);
+        setDragState(null);
     }, []);
 
-    // Global listeners for dragging (attached to window to catch fast movements)
+    // Global listeners for dragging
     useEffect(() => {
-        if (isDragging) {
+        if (dragState) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
         } else {
@@ -78,7 +84,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isDragging, handleMouseMove, handleMouseUp]);
+    }, [dragState, handleMouseMove, handleMouseUp]);
 
     const handleRowSelect = (index: number, row: Record<string, string>) => {
         setSelectedRowIndex(index);
@@ -100,8 +106,8 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
                 width: '100%',
                 height: '100%',
                 overflow: 'hidden',
-                cursor: isDragging ? 'row-resize' : 'default',
-                userSelect: isDragging ? 'none' : 'auto'
+                cursor: dragState ? 'row-resize' : 'default',
+                userSelect: dragState ? 'none' : 'auto'
             }}
         >
             {/* Top Pane: Diagram */}
@@ -141,22 +147,18 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path }) => {
                 </div>
             </div>
 
-            {/* Resize Handle */}
+            {/* Resize Handle - Simple */}
             <div
                 onMouseDown={handleMouseDown}
                 className="horizontal-resize-handle"
                 style={{
-                    height: '10px',
-                    margin: '-5px 0', // Centered overlapping
+                    height: '12px',
+                    margin: '-6px 0',
                     cursor: 'row-resize',
-                    zIndex: 50, // High z-index to overlay sticky header
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    zIndex: 100, // Ensure above sticky headers
+                    position: 'relative'
                 }}
-            >
-                <div className="handle-lines" />
-            </div>
+            />
 
             {/* Bottom Pane: Data Table */}
             <div style={{

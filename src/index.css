@@ -90,52 +90,55 @@ body {
 }
 
 /* Resize Handle Styles */
-/* Vertical Handle (Sidebar) */
-.vertical-resize-handle {
-  transition: background-color 0.2s;
-  z-index: 50 !important;
+
+/* Common Base for Handles */
+.vertical-resize-handle,
+.column-resize-handle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100 !important;
+  /* High enough to over sticky headers */
 }
 
-.vertical-resize-handle .handle-lines {
-  width: 4px;
-  /* Thin pill */
-  height: 32px;
-  /* Good height */
-  background-color: #d1d5db;
-  /* Gray-300: Visible but subtle */
-  border-radius: 99px;
-  /* Full pill */
-  opacity: 1;
-  /* Always visible */
-  transition: background-color 0.2s;
-}
-
-.vertical-resize-handle:hover .handle-lines {
-  background-color: var(--border-focus);
-  /* Blue on hover */
-}
-
-/* Horizontal Handle (Diagram/Table) */
 .horizontal-resize-handle {
-  transition: background-color 0.2s;
-  z-index: 50 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 100 !important;
 }
 
-.horizontal-resize-handle .handle-lines {
-  width: 32px;
-  /* Good width */
-  height: 4px;
-  /* Thin pill */
-  background-color: #d1d5db;
-  /* Gray-300 */
-  border-radius: 99px;
-  /* Full pill */
-  opacity: 1;
-  /* Always visible */
+/* Vertical Handle Visual Line (Sidebar & Columns) */
+.vertical-resize-handle::after,
+.column-resize-handle::after {
+  content: '';
+  width: 2px;
+  /* Thin line */
+  height: 100%;
+  background-color: transparent;
   transition: background-color 0.2s;
 }
 
-.horizontal-resize-handle:hover .handle-lines {
+.vertical-resize-handle:hover::after,
+.vertical-resize-handle:active::after,
+.column-resize-handle:hover::after,
+.column-resize-handle:active::after {
   background-color: var(--border-focus);
-  /* Blue on hover */
+  /* Only line colored */
+}
+
+/* Horizontal Handle Visual Line */
+.horizontal-resize-handle::after {
+  content: '';
+  width: 100%;
+  height: 2px;
+  /* Thin line */
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.horizontal-resize-handle:hover::after,
+.horizontal-resize-handle:active::after {
+  background-color: var(--border-focus);
 }

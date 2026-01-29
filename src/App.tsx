@@ -7,14 +7,23 @@ import './index.css';
 function AppContent() {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
 
+  // Sidebar Width State
+  const [sidebarWidth, setSidebarWidth] = useState(260);
+
   // Compare Mode State
   const [isCompareMode, setIsCompareMode] = useState(false);
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
   const [columnWidths, setColumnWidths] = useState<number[]>([]);
   const compareContainerRef = useRef<HTMLDivElement>(null);
 
-  // Column Resizing State
-  const [resizingColIndex, setResizingColIndex] = useState<number | null>(null);
+  // Simplified Resize State
+  // We store initial values on start to calculate deltas accurately without drift
+  const [resizeState, setResizeState] = useState<{
+    type: 'sidebar' | 'column';
+    index?: number; // for column
+    startX: number;
+    startWidths: number[]; // for column: [left, right] widths; for sidebar: [width]
+  } | null>(null);
 
   // Sync column widths when selection changes
   useEffect(() => {
@@ -28,8 +37,6 @@ function AppContent() {
 
   const toggleCompareMode = useCallback(() => {
     setIsCompareMode(prev => !prev);
-    // Optional: Clear selection when toggling? Or keep it?
-    // For now, let's keep it, but maybe we want to initialize selectedPaths with current selectedPath if entering compare mode
     if (!isCompareMode && selectedPath) {
       setSelectedPaths(new Set([selectedPath]));
     }
@@ -47,107 +54,80 @@ function AppContent() {
     });
   }, []);
 
-  // Column Resize Handlers
+  // START HANDLERS
+  const startResizingSidebar = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setResizeState({
+      type: 'sidebar',
+      startX: e.clientX,
+      startWidths: [sidebarWidth]
+    });
+  }, [sidebarWidth]);
+
   const startResizingCol = useCallback((index: number) => (e: React.MouseEvent) => {
     e.preventDefault();
-    setResizingColIndex(index);
-  }, []);
-
-  const stopResizingCol = useCallback(() => {
-    setResizingColIndex(null);
-  }, []);
-
-  const resizeCol = useCallback((e: MouseEvent) => {
-    if (resizingColIndex === null || !compareContainerRef.current) return;
-
-    const containerRect = compareContainerRef.current.getBoundingClientRect();
-    const containerWidth = containerRect.width;
-
-    // Mouse position relative to container
-    const mouseX = e.clientX - containerRect.left;
-    const mousePercent = (mouseX / containerWidth) * 100;
-
-    // Calculate left edge of the resizing column
-    let leftEdgePercent = 0;
-    for (let i = 0; i < resizingColIndex; i++) {
-      leftEdgePercent += columnWidths[i];
-    }
-
-    // New width for Left Col = MousePos% - LeftEdge%
-    let newLeftColWidth = mousePercent - leftEdgePercent;
-
-    // Constraints: Min 10%
-    if (newLeftColWidth < 10) newLeftColWidth = 10;
-
-    // Check Right Col (index + 1)
-    // We steal from right neighbor or push it
-    const combinedWidth = columnWidths[resizingColIndex] + columnWidths[resizingColIndex + 1];
-    let newRightColWidth = combinedWidth - newLeftColWidth;
-
-    // Right Col constraint
-    if (newRightColWidth < 10) {
-      newRightColWidth = 10;
-      newLeftColWidth = combinedWidth - 10;
-    }
-
-    setColumnWidths(prev => {
-      const next = [...prev];
-      next[resizingColIndex] = newLeftColWidth;
-      next[resizingColIndex + 1] = newRightColWidth;
-      return next;
+    if (!columnWidths.length) return;
+    setResizeState({
+      type: 'column',
+      index,
+      startX: e.clientX,
+      startWidths: [columnWidths[index], columnWidths[index + 1]]
     });
-
-  }, [resizingColIndex, columnWidths]);
-
-  // Global listeners for column resize
-  useEffect(() => {
-    if (resizingColIndex !== null) {
-      window.addEventListener('mousemove', resizeCol);
-      window.addEventListener('mouseup', stopResizingCol);
-    } else {
-      window.removeEventListener('mousemove', resizeCol);
-      window.removeEventListener('mouseup', stopResizingCol);
-    }
-    return () => {
-      window.removeEventListener('mousemove', resizeCol);
-      window.removeEventListener('mouseup', stopResizingCol);
-    };
-  }, [resizingColIndex, resizeCol, stopResizingCol]);
-
-  // Sidebar Resize State
-  const [sidebarWidth, setSidebarWidth] = useState(260);
-  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
-
-  const startResizing = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizingSidebar(true);
-  }, []);
+  }, [columnWidths]);
 
   const stopResizing = useCallback(() => {
-    setIsResizingSidebar(false);
+    setResizeState(null);
   }, []);
 
-  const resize = useCallback((e: MouseEvent) => {
-    if (isResizingSidebar) {
-      // Clamp width between 200px and 600px
-      const newWidth = Math.max(200, Math.min(600, e.clientX));
+  // GLOBAL RESIZE HANDLER
+  const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
+    if (!resizeState) return;
+
+    if (resizeState.type === 'sidebar') {
+      const delta = e.clientX - resizeState.startX;
+      const newWidth = Math.max(200, Math.min(600, resizeState.startWidths[0] + delta));
       setSidebarWidth(newWidth);
     }
-  }, [isResizingSidebar]);
+    else if (resizeState.type === 'column' && resizeState.index !== undefined && compareContainerRef.current) {
+      const index = resizeState.index;
+      const containerWidth = compareContainerRef.current.offsetWidth;
+      const deltaPixels = e.clientX - resizeState.startX;
+      const deltaPercent = (deltaPixels / containerWidth) * 100;
+
+      let newLeft = resizeState.startWidths[0] + deltaPercent;
+      let newRight = resizeState.startWidths[1] - deltaPercent;
+
+      // Clamping (min 5%)
+      if (newLeft < 5) {
+        newLeft = 5;
+        newRight = resizeState.startWidths[0] + resizeState.startWidths[1] - 5;
+      } else if (newRight < 5) {
+        newRight = 5;
+        newLeft = resizeState.startWidths[0] + resizeState.startWidths[1] - 5;
+      }
+
+      setColumnWidths(prev => {
+        const next = [...prev];
+        next[index] = newLeft;
+        next[index + 1] = newRight;
+        return next;
+      });
+    }
+  }, [resizeState]);
 
   useEffect(() => {
-    if (isResizingSidebar) {
-      window.addEventListener('mousemove', resize);
+    if (resizeState) {
+      window.addEventListener('mousemove', handleGlobalMouseMove);
       window.addEventListener('mouseup', stopResizing);
-    } else {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
     }
     return () => {
-      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
       window.removeEventListener('mouseup', stopResizing);
     };
-  }, [isResizingSidebar, resize, stopResizing]);
+  }, [resizeState, handleGlobalMouseMove, stopResizing]);
+
+
+
 
   return (
     <div style={{
@@ -155,8 +135,8 @@ function AppContent() {
       height: '100vh',
       width: '100vw',
       overflow: 'hidden',
-      cursor: (isResizingSidebar || resizingColIndex !== null) ? 'col-resize' : 'default',
-      userSelect: (isResizingSidebar || resizingColIndex !== null) ? 'none' : 'auto',
+      cursor: resizeState ? 'col-resize' : 'default',
+      userSelect: resizeState ? 'none' : 'auto',
       backgroundColor: 'var(--bg-app)',
       color: 'var(--text-primary)'
     }}>
@@ -170,23 +150,20 @@ function AppContent() {
         />
       </div>
 
-      {/* Vertical Resize Handle */}
+      {/* Vertical Resize Handle (Sidebar) - Simple */}
       <div
-        onMouseDown={startResizing}
-        style={{
-          width: '10px', // Wider hit area
-          cursor: 'col-resize',
-          zIndex: 50, // Ensure above content
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          margin: '0 -5px', // Center overlap
-          position: 'relative'
-        }}
+        onMouseDown={startResizingSidebar}
         className="vertical-resize-handle"
-      >
-        <div className="handle-lines" />
-      </div>
+        style={{
+          width: '12px',
+          margin: '0 -6px',
+          zIndex: 100,
+          cursor: 'col-resize',
+          position: 'relative',
+          display: 'flex',
+          justifyContent: 'center'
+        }}
+      />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, margin: 0, backgroundColor: 'var(--bg-panel)', overflow: 'hidden' }}>
         {isCompareMode ? (
@@ -208,27 +185,24 @@ function AppContent() {
                   borderRight: '1px solid var(--border-color)',
                   display: 'flex',
                   flexDirection: 'column',
-                  minWidth: '50px', // Absolute minimum
+                  minWidth: '50px',
                   position: 'relative'
                 }}>
                   <ComponentViewer path={path} />
 
-                  {/* Resize Handle (except for last column) */}
+                  {/* Column Resize Handle - Simple */}
                   {index < Array.from(selectedPaths).length - 1 && (
                     <div
                       onMouseDown={startResizingCol(index)}
+                      className="column-resize-handle"
                       style={{
-                        width: '6px',
-                        right: '-3px',
+                        width: '12px',
+                        right: '-6px',
                         top: 0, bottom: 0,
                         position: 'absolute',
                         cursor: 'col-resize',
-                        zIndex: 10,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                        zIndex: 100
                       }}
-                      className="column-resize-handle"
                     />
                   )}
                 </div>
