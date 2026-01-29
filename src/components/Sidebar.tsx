@@ -187,12 +187,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <button
                             onClick={onClose}
                             className="theme-toggle"
-                            title="Close Sidebar"
+                            title="Hide Menu"
                         >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="9" y1="3" x2="9" y2="21"></line>
-                                <path d="M15 9l-3 3 3 3" /> {/* Left arrow hint */}
+                                <path d="M14 16l-4-4 4-4" /> {/* Chevron Left */}
                             </svg>
                         </button>
                         <h2 style={{ margin: 0 }}>Components</h2>
@@ -211,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <rect x="2" y="3" width="9" height="18" rx="2" ry="2"></rect>
                                 <rect x="13" y="3" width="9" height="18" rx="2" ry="2"></rect>
-                                <line x1="12" y1="3" x2="12" y2="21" style={{ stroke: 'transparent' }}></line> {/* Spacer concept, but rects are enough */}
+                                <line x1="12" y1="3" x2="12" y2="21" style={{ stroke: 'transparent' }}></line>
                             </svg>
                         </button>
 

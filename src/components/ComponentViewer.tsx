@@ -112,6 +112,8 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
 
     // Diagram Visibility State
     const [isDiagramVisible, setIsDiagramVisible] = useState(true);
+    // Table Visibility State
+    const [isTableVisible, setIsTableVisible] = useState(true);
 
     // Main Render
     return (
@@ -178,45 +180,112 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                     </div>
                 </div>
 
-                {/* Diagram Toggle Button (Only show if data available) */}
-                {data && (
-                    <button
-                        onClick={() => setIsDiagramVisible(!isDiagramVisible)}
-                        title={isDiagramVisible ? 'Hide Diagram' : 'Show Diagram'}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: 'var(--text-secondary)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '4px',
-                            borderRadius: '4px'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--row-hover)'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                        {isDiagramVisible ? (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M18 15l-6-6-6 6" />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {/* Button 1: Maximize Diagram (Hide Table) 
+                        Active = Table is HIDDEN (Diagram Maximized).
+                        Icon: Expand/Maximize icon.
+                    */}
+                    {data && (
+                        <button
+                            onClick={() => {
+                                if (!isTableVisible && !isDiagramVisible) setIsDiagramVisible(true);
+                                // Toggle Table Visibility
+                                setIsTableVisible(!isTableVisible);
+                                // If hiding table, ensure diagram is visible
+                                if (isTableVisible) setIsDiagramVisible(true);
+                            }}
+                            title={isTableVisible ? "Maximize Diagram" : "Show Table"}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: !isTableVisible ? 'var(--accent-color)' : 'var(--text-secondary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '4px',
+                                borderRadius: '4px',
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--row-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                {isTableVisible ? (
+                                    // Icon for "Maximize Diagram" (Expand)
+                                    <>
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <polyline points="9 21 3 21 3 15"></polyline>
+                                        <line x1="21" y1="3" x2="14" y2="10"></line>
+                                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                                    </>
+                                ) : (
+                                    // Icon for "Show Table" (Restore)
+                                    <>
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="3" y1="15" x2="21" y2="15"></line>
+                                    </>
+                                )}
                             </svg>
-                        ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 9l6 6 6-6" />
+                        </button>
+                    )}
+
+                    {/* Button 2: Hide Diagram (Maximize Table) 
+                         Active = Diagram is HIDDEN.
+                         Icon: Collapse/Hide Image icon.
+                     */}
+                    {data && (
+                        <button
+                            onClick={() => {
+                                if (!isDiagramVisible && !isTableVisible) setIsTableVisible(true);
+                                // Toggle Diagram Visibility
+                                setIsDiagramVisible(!isDiagramVisible);
+                                // If hiding diagram, ensure table is visible
+                                if (isDiagramVisible) setIsTableVisible(true);
+                            }}
+                            title={isDiagramVisible ? "Hide Diagram" : "Show Diagram"}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: !isDiagramVisible ? 'var(--accent-color)' : 'var(--text-secondary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '4px',
+                                borderRadius: '4px',
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--row-hover)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                {isDiagramVisible ? (
+                                    // Icon for "Hide Diagram"
+                                    <>
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <path d="M3 9h18" /> {/* Split hint */}
+                                        <path d="M15 9l-3-3-3 3" /> {/* Up Arrow hint (Push up/hide) */}
+                                    </>
+                                ) : (
+                                    // Icon for "Show Diagram"
+                                    <>
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline> {/* Image hint */}
+                                    </>
+                                )}
                             </svg>
-                        )}
-                    </button>
-                )}
+                        </button>
+                    )}
+                </div>
             </h3>
 
             {/* Top Pane: Diagram (Collapsible) */}
             {data && isDiagramVisible && (
                 <div style={{
-                    flexBasis: `${topPaneHeight}%`,
-                    flexGrow: 0,
+                    flexBasis: isTableVisible ? `${topPaneHeight}%` : '100%',
+                    flexGrow: isTableVisible ? 0 : 1,
                     flexShrink: 0,
                     minHeight: '100px',
-                    borderBottom: '1px solid var(--border-color)',
+                    borderBottom: isTableVisible ? '1px solid var(--border-color)' : 'none',
                     backgroundColor: 'var(--bg-grid)',
                     position: 'relative',
                     display: 'flex',
@@ -239,7 +308,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
             )}
 
             {/* Resize Handle - Simple (Visible only when diagram is shown) */}
-            {data && isDiagramVisible && (
+            {data && isDiagramVisible && isTableVisible && (
                 <div
                     onMouseDown={handleMouseDown}
                     className="horizontal-resize-handle"
@@ -254,7 +323,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
             )}
 
             {/* Bottom Pane: Data Table */}
-            {data && (
+            {data && isTableVisible && (
                 <div style={{
                     flex: 1,
                     overflow: 'hidden',
