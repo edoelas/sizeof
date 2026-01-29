@@ -248,6 +248,22 @@ function AppContent() {
                       isSidebarOpen={isSidebarOpen}
                       onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                     />
+
+                    {!isMobile && index < Array.from(selectedPaths).length - 1 && (
+                      <div
+                        onMouseDown={startResizingCol(index)}
+                        className="column-resize-handle"
+                        style={{
+                          position: 'absolute',
+                          right: '-6px',
+                          top: 0,
+                          bottom: 0,
+                          width: '12px',
+                          cursor: 'col-resize',
+                          zIndex: 10
+                        }}
+                      />
+                    )}
                     {/* Note: ComponentViewer inside Compare Mode will have its OWN header too. 
                             If we want a "Clean" compare, we might need to tell ComponentViewer to hide its header? 
                             OR just let it have headers (Component Name is useful). 

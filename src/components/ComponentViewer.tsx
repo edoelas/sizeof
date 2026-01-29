@@ -3,7 +3,7 @@ import { fetchComponentData } from '../utils/dataLoader';
 import type { ComponentData } from '../types';
 import { SvgRenderer } from './SvgRenderer';
 import { DataTable } from './DataTable';
-import { useMediaQuery } from '../hooks/useMediaQuery';
+
 
 interface ComponentViewerProps {
     path: string;
@@ -12,7 +12,7 @@ interface ComponentViewerProps {
 }
 
 export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSidebarOpen, onToggleSidebar }) => {
-    const isMobile = useMediaQuery('(max-width: 768px)');
+
     const [data, setData] = useState<ComponentData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
