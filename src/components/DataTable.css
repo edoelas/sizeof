@@ -64,9 +64,3 @@
     font-weight: 500;
     border-bottom: 1px solid var(--border-focus);
 }
-
-/* Zebra striping could be optional
-.component-table tr:nth-child(even) {
-  background-color: rgba(0,0,0,0.01);
-} 
-*/

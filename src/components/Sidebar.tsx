@@ -94,8 +94,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ item, onSelect, forceExpand, isComp
     );
 };
 
-// Remove HelpModal import if unused, or keep if needed (but we are moving it)
-// import { HelpModal } from './HelpModal'; // Moving to App
+
 
 export const Sidebar: React.FC<SidebarProps> = ({
     onSelect,

@@ -8,13 +8,19 @@ export interface CatalogItem {
 export interface ComponentColumn {
     key: string;
     label: string;
+    type?: 'string' | 'number';
+    unit?: string;
 }
 
 export interface ComponentConfig {
+    meta?: {
+        id: string;
+        version: string;
+    };
     name: string;
     standard: string;
     columns: ComponentColumn[];
-    data: Record<string, string>[];
+    data: Record<string, string | number>[];
 }
 
 export interface ComponentData {

@@ -18,7 +18,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
     const [loading, setLoading] = useState(false);
 
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
-    const [selectedRowData, setSelectedRowData] = useState<Record<string, string> | null>(null);
+    const [selectedRowData, setSelectedRowData] = useState<Record<string, string | number> | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -105,7 +105,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
         };
     }, [dragState, handleMouseMove, handleMouseUp]);
 
-    const handleRowSelect = (index: number, row: Record<string, string>) => {
+    const handleRowSelect = (index: number, row: Record<string, string | number>) => {
         setSelectedRowIndex(index);
         setSelectedRowData(row);
     };
@@ -285,7 +285,14 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                     }} />
 
                     <div style={{ flex: 1, overflow: 'hidden', padding: isTableVisible ? '16px' : '0', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-                        <SvgRenderer svgContent={data.svg} data={selectedRowData} />
+                        <SvgRenderer
+                            svgContent={data.svg}
+                            data={selectedRowData}
+                            units={data.config.columns.reduce((acc, col) => {
+                                if (col.unit) acc[col.key] = col.unit;
+                                return acc;
+                            }, {} as Record<string, string>)}
+                        />
                     </div>
                 </div>
             )}
