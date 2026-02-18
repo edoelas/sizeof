@@ -224,12 +224,11 @@ function AppContent() {
             >
               {Array.from(selectedPaths).length > 0 ? (
                 Array.from(selectedPaths).map((path, index) => (
-                  <div key={path} style={{
+                  <div key={path} className="compare-column" style={{
                     width: (isMobile && !isLandscape) ? '100%' : `${columnWidths[index]}%`,
                     flexShrink: (isMobile && !isLandscape) ? 0 : 1,
                     minWidth: (isMobile && !isLandscape) ? '100%' : '50px',
                     height: '100%',
-                    borderRight: '1px solid var(--border-color)',
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'relative'

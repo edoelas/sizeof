@@ -50,7 +50,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
         return (
             <>
                 {data.config.name}
-                <span style={{ fontWeight: 'normal', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                <span className="component-subtitle" style={{ fontWeight: 'normal', color: 'var(--text-secondary)' }}>
                     {data.config.standard}
                 </span>
             </>
@@ -152,6 +152,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                     {!isSidebarOpen && (
                         <button
                             onClick={onToggleSidebar}
+                            className="view-control-btn"
                             style={{
                                 background: 'none',
                                 border: 'none',
@@ -192,6 +193,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                                 // If hiding table, ensure diagram is visible
                                 if (isTableVisible) setIsDiagramVisible(true);
                             }}
+                            className="view-control-btn"
                             title={isTableVisible ? "Maximize Diagram" : "Show Table"}
                             style={{
                                 background: 'none',
@@ -233,6 +235,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
                                 // If hiding diagram, ensure table is visible
                                 if (isDiagramVisible) setIsTableVisible(true);
                             }}
+                            className="view-control-btn"
                             title={isDiagramVisible ? "Hide Diagram" : "Show Diagram"}
                             style={{
                                 background: 'none',
@@ -263,17 +266,19 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({ path, isSideba
 
             {/* Top Pane: Diagram (Collapsible) */}
             {data && isDiagramVisible && (
-                <div style={{
-                    flexBasis: isTableVisible ? `${topPaneHeight}%` : '100%',
-                    flexGrow: isTableVisible ? 0 : 1,
-                    flexShrink: 0,
-                    minHeight: '100px',
-                    borderBottom: isTableVisible ? '1px solid var(--border-color)' : 'none',
-                    backgroundColor: 'var(--bg-grid)',
-                    position: 'relative',
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}>
+                <div
+                    className={`diagram-pane ${isTableVisible ? 'show-border' : ''}`}
+                    style={{
+                        flexBasis: isTableVisible ? `${topPaneHeight}%` : '100%',
+                        flexGrow: isTableVisible ? 0 : 1,
+                        flexShrink: 0,
+                        minHeight: '100px',
+                        // borderBottom handled by CSS class
+                        backgroundColor: 'var(--bg-grid)',
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}>
                     <div style={{
                         position: 'absolute',
                         top: 0, left: 0, right: 0, bottom: 0,

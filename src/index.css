@@ -42,10 +42,412 @@
   --row-hover: #334155;
   --row-selected: #1e293b;
 
+  /* High Contrast Overrides */
   --bg-grid: #1e293b;
   --grid-line: #334155;
   --bg-sub-header: #0f172a;
   --svg-filter: invert(1) hue-rotate(180deg);
+}
+
+:root.high-contrast {
+  /* HIDE GRID for cleaner high contrast */
+  background-image: none !important;
+  /* High Contrast & Large Text Overrides */
+  --bg-app: #ffffff;
+  --bg-panel: #ffffff;
+  --bg-sidebar: #ffffff;
+  /* Unified Light Background */
+  --bg-header: #ffffff;
+
+  --border-color: #000000;
+  --border-focus: #0000ff;
+
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-accent: #0000ff;
+
+  /* Improved Selection Colors for AAA Accessibility */
+  --row-hover: #00FFFF;
+  /* High Visibility Cyan */
+  --row-selected: #000000;
+  /* Distinct Black bg for selected */
+
+  --space-xs: 8px;
+  --space-sm: 16px;
+
+  --bg-grid: #ffffff;
+  --grid-line: transparent;
+  /* Hide grid lines */
+  --bg-sub-header: #ffffff;
+
+  /* Filter: High Contrast grayscale */
+  --svg-filter: grayscale(100%) contrast(200%);
+}
+
+:root.high-contrast[data-theme='dark'] {
+  --bg-app: #000000;
+  --bg-panel: #000000;
+  --bg-sidebar: #000000;
+  /* Unified Dark Background */
+  --bg-header: #000000;
+
+  --border-color: #ffffff;
+  --border-focus: #ffff00;
+
+  --text-primary: #ffffff;
+  --text-secondary: #ffffff;
+  --text-accent: #ffff00;
+
+  /* Improved Selection Colors for Dark Mode */
+  --row-hover: #00FFFF;
+  /* High Visibility Cyan */
+  --row-selected: #ffff00;
+  /* High-vis Yellow for selection */
+
+  --bg-grid: #000000;
+  --grid-line: transparent;
+  --bg-sub-header: #000000;
+
+  --svg-filter: invert(1) grayscale(100%) contrast(200%);
+}
+
+/* Specific component overrides for High Contrast Color */
+:root.high-contrast body {
+  /* No font size change here, handled by text-* classes */
+  font-weight: 600;
+}
+
+/* =========================================
+   TEXT SIZE MODES
+   ========================================= */
+
+/* --- LARGE TEXT MODE --- */
+:root.text-large body {
+  font-size: 18px;
+}
+
+:root.text-large .sidebar {
+  font-size: 16px !important;
+}
+
+:root.text-large .search-input {
+  font-size: 16px !important;
+  padding: 10px !important;
+}
+
+:root.text-large .node-label {
+  padding: 8px 14px !important;
+}
+
+:root.text-large .component-table {
+  font-size: 16px !important;
+}
+
+:root.text-large .component-table th,
+:root.text-large .component-table td {
+  padding: 10px !important;
+  font-size: 16px !important;
+}
+
+:root.text-large h2 {
+  font-size: 22px !important;
+}
+
+:root.text-large h3 {
+  font-size: 20px !important;
+}
+
+:root.text-large p,
+:root.text-large li {
+  font-size: 16px !important;
+}
+
+:root.text-large .component-subtitle {
+  font-size: 16px !important;
+}
+
+
+/* --- EXTRA LARGE TEXT MODE (Original High Contrast Size) --- */
+:root.text-xl body {
+  font-size: 24px;
+}
+
+:root.text-xl .sidebar {
+  font-size: 22px !important;
+}
+
+:root.text-xl .search-input {
+  font-size: 22px !important;
+  padding: 12px !important;
+}
+
+:root.text-xl .node-label {
+  padding: 12px 16px !important;
+}
+
+:root.text-xl .node-label.folder {
+  font-size: 1.2em !important;
+}
+
+:root.text-xl .component-table {
+  font-size: 22px !important;
+}
+
+:root.text-xl .component-table th {
+  font-size: 24px !important;
+  padding: 16px !important;
+}
+
+:root.text-xl .component-table td {
+  padding: 14px !important;
+  font-size: 22px !important;
+}
+
+:root.text-xl h2 {
+  font-size: 28px !important;
+}
+
+:root.text-xl h3 {
+  font-size: 26px !important;
+}
+
+:root.text-xl p,
+:root.text-xl li {
+  font-size: 22px !important;
+  line-height: 1.6 !important;
+}
+
+:root.text-xl .sidebar-header h2 {
+  font-size: 28px !important;
+}
+
+:root.text-xl .component-subtitle {
+  font-size: 22px !important;
+  margin-left: 12px !important;
+}
+
+
+/* =========================================
+   HIGH CONTRAST COLOR OVERRIDES (Sizes Removed)
+   ========================================= */
+
+/* Ensure selected row TEXT is readable on the high-contrast background */
+:root.high-contrast .component-table tr.selected td {
+  background-color: #000000 !important;
+  /* Force Black Background */
+  color: #ffffff !important;
+  /* Force White Text */
+  font-weight: 800 !important;
+  /* Border remains 3px from td styles */
+}
+
+/* Ensure HOVER row TEXT is readable (Black on Cyan) */
+:root.high-contrast .component-table tr:hover td,
+:root.high-contrast .node-label:hover,
+:root.high-contrast button.theme-toggle:hover {
+  background-color: var(--row-hover) !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  cursor: pointer;
+}
+
+/* High Contrast Icon Styles */
+:root.high-contrast button.theme-toggle {
+  background-color: #ffffff;
+  color: #000000;
+  border: 3px solid #000000;
+}
+
+/* Checkbox Styles */
+.compare-checkbox {
+  /* Removed fixed 16px size to avoid spacing issues */
+  cursor: pointer;
+  accent-color: var(--text-accent);
+}
+
+:root.high-contrast .compare-checkbox {
+  border: 2px solid #000000 !important;
+  margin-right: 12px !important;
+  accent-color: #000000;
+  /* Black check in high contrast */
+}
+
+/* Checkbox Sizing - Move to Text Size Classes */
+:root.text-xl .compare-checkbox {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+:root.text-large .compare-checkbox {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+
+:root.high-contrast button.theme-toggle.active {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 3px solid #000000;
+}
+
+/* Ensure Dark Mode High Contrast Selection matches INVERTED logic */
+/* Selected = White Bg, Black Text */
+:root.high-contrast[data-theme='dark'] .component-table tr.selected td {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Ensure Dark Mode High Contrast Icons follow INVERTED rule */
+/* Unselected = Black Bg, White Text */
+/* Ensure Dark Mode High Contrast Icons follow INVERTED rule */
+/* Unselected = Black Bg, White Text */
+:root.high-contrast[data-theme='dark'] button.theme-toggle {
+  background-color: #000000;
+  color: #ffffff;
+  border: 3px solid #ffffff !important;
+}
+
+/* Select Button Colors in Dark Mode High Contrast */
+:root.high-contrast[data-theme='dark'] button.theme-toggle.active {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  /* Black border for definition on White Bg */
+}
+
+/* ------------ CHECKBOX AND VIEW BUTTON INVERSIONS ------------ */
+
+/* View Control Buttons (Component Viewer) - High Contrast Defaults */
+:root.high-contrast .view-control-btn {
+  border: 3px solid #000000 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  padding: 2px !important;
+}
+
+/* Sizing for View Control Buttons - Move to Text Size */
+:root.text-xl .view-control-btn {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+:root.text-xl .view-control-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+:root.high-contrast .view-control-btn:hover {
+  background-color: var(--row-hover) !important;
+  /* Cyan */
+}
+
+
+/* Dark Mode - INVERT View Control Buttons */
+:root.high-contrast[data-theme='dark'] .view-control-btn {
+  border: 3px solid #ffffff !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Dark Mode - INVERT Checkboxes */
+:root.high-contrast[data-theme='dark'] .compare-checkbox {
+  border: 2px solid #ffffff !important;
+  accent-color: #ffffff !important;
+  /* White check/fill */
+}
+
+:root.high-contrast[data-theme='dark'] button.theme-toggle.active {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+
+/* Force larger fonts in Sidebar - REMOVED (Handled by .text-xl) */
+
+/* Force larger fonts in Help Modal - REMOVED (Handled by .text-xl) */
+
+/* Force larger fonts in Table elements - REMOVED (Handled by .text-xl) */
+:root.high-contrast .component-table th {
+  background-color: var(--bg-app) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 3px solid var(--text-primary) !important;
+  /* Unified 3px */
+  border-right: 3px solid var(--text-primary) !important;
+  /* Added right border */
+}
+
+:root.high-contrast .component-table td {
+  border-bottom: 3px solid var(--text-primary) !important;
+  /* Unified 3px */
+  border-right: 3px solid var(--text-primary) !important;
+  /* Unified 3px */
+}
+
+/* Compare Mode Separator */
+:root.high-contrast .compare-column {
+  border-right: 5px solid var(--text-primary) !important;
+  /* Match sidebar border */
+}
+
+/* Thicker Component Title Separator */
+:root.high-contrast .component-viewer h3 {
+  border-bottom: 3px solid var(--text-primary) !important;
+}
+
+/* Subtitle Styles */
+.component-subtitle {
+  font-size: 12px;
+  margin-left: 8px;
+  /* Add some spacing */
+}
+
+:root.high-contrast .component-subtitle {
+  color: var(--text-primary) !important;
+  /* Ensure high contrast color */
+  font-weight: 600 !important;
+}
+
+/* Diagram Pane Separator */
+.diagram-pane.show-border {
+  border-bottom: 1px solid var(--border-color);
+}
+
+:root.high-contrast .diagram-pane.show-border {
+  border-bottom: 3px solid var(--text-primary) !important;
+}
+
+/* Default Compare Column */
+.compare-column {
+  border-right: 1px solid var(--border-color);
+}
+
+
+/* Remove Grid Background Pattern specifically if applied via classes */
+:root.high-contrast .diagram-container {
+  background-image: none !important;
+  background-color: var(--bg-panel) !important;
+}
+
+:root.high-contrast .sidebar-container {
+  border-right: 5px solid var(--text-primary) !important;
+  /* Thicker border */
+}
+
+:root.high-contrast .sidebar-header h2 {
+  text-transform: uppercase;
+  text-decoration: underline;
+}
+
+:root.high-contrast button.theme-toggle {
+  border: 2px solid var(--text-primary);
+  width: 32px;
+  /* Bigger buttons */
+  height: 32px;
+}
+
+:root.high-contrast button.theme-toggle svg {
+  width: 24px;
+  height: 24px;
 }
 
 body {
@@ -205,4 +607,36 @@ body {
 .horizontal-resize-handle:hover::after,
 .horizontal-resize-handle:active::after {
   background-color: var(--border-focus);
+}
+
+/* Modal Buttons */
+:root.high-contrast .modal-close-btn {
+  border: 3px solid #000000 !important;
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 30px !important;
+  color: #000000 !important;
+}
+
+:root.high-contrast .modal-action-btn {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 3px solid #000000 !important;
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  padding: 12px 24px !important;
+}
+
+/* Modal Buttons Inversion for Dark Mode */
+:root.high-contrast[data-theme='dark'] .modal-close-btn {
+  border: 3px solid #ffffff !important;
+  color: #ffffff !important;
+}
+
+:root.high-contrast[data-theme='dark'] .modal-action-btn {
+  background-color: #ffffff !important;
+  /* White Bg */
+  color: #000000 !important;
+  /* Black Text */
+  border: 3px solid #ffffff !important;
 }

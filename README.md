@@ -1,73 +1,77 @@
-# React + TypeScript + Vite
+# Component Footprint Viewer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A comprehensive viewer for mechanical component footprints, standards, and dimensions.
 
-Currently, two official plugins are available:
+## Catalog Data Format
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Each component in the `sizeof-catalog` repository must follow this structure:
 
-## React Compiler
+### 1. Configuration (`config.yaml`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Defines the component metadata, columns, units, and data rows.
 
-## Expanding the ESLint configuration
+```yaml
+meta:
+  id: "iso-4762-socket-head"  # Unique stable ID
+  version: "1.0"
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+name: "Socket Head Cap Screws"
+standard: "DIN 912 / ISO 4762"
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+columns:
+  - key: "size"
+    label: "Nominal Size"
+    type: "string"
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+  - key: "pitch"
+    label: "Thread Pitch"
+    type: "number"
+    unit: "mm"    # Unit info (separating data from presentation)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+  - key: "H"
+    label: "Head Diameter (Max)"
+    type: "number"
+    unit: "mm"
+
+data:
+  # Data should be pure numbers where possible
+  - { size: "M3", pitch: 0.5, H: 5.5 }
+  - { size: "M4", pitch: 0.7, H: 7.0 }
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Diagram (`diagram.svg`)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The vector illustration of the component. Use Mustache-style templates for variable substitution.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+#### Variable Reference Guide
+
+| Syntax | Description | Example Output | Context |
+| :--- | :--- | :--- | :--- |
+| `{{ key }}` | **Default Display**. Includes unit if defined. | `0.5 mm` | Best for `<text>` labels. |
+| `{{ key_raw }}` | **Raw Numeric Value**. No units. | `0.5` | REQUIRED for attributes (`width`, `d`, `x`, `y`). |
+
+#### Example SVG
+
+```xml
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- GEOMETRY: Always use _raw to ensure valid numbers in attributes -->
+  <rect 
+    x="10" 
+    y="10" 
+    width="{{ H_raw }}" 
+    height="50" 
+    fill="#ddd" 
+    stroke="black" 
+  />
+
+  <!-- LABELS: Use standard variable to show "5.5 mm" -->
+  <text x="10" y="5">
+    Head Dia: {{ H }}
+  </text>
+</svg>
 ```
+
+## Development
+
+- `npm run dev`: Start development server
+- `npm run build`: Build for production

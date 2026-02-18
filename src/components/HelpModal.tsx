@@ -40,6 +40,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                     <h2 style={{ margin: 0, fontSize: '18px' }}>How to Use Component Viewer</h2>
                     <button
                         onClick={onClose}
+                        className="modal-close-btn"
                         style={{
                             background: 'none',
                             border: 'none',
@@ -78,6 +79,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <div style={{ textAlign: 'right', marginTop: '20px' }}>
                     <button
                         onClick={onClose}
+                        className="modal-action-btn"
                         style={{
                             padding: '8px 16px',
                             backgroundColor: 'var(--text-accent)',

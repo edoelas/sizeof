@@ -42,16 +42,26 @@
     letter-spacing: 0.5px;
     padding: 8px 12px;
     border-bottom: 2px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     z-index: 10;
+}
+
+.component-table th:last-child {
+    border-right: none;
 }
 
 .component-table td {
     padding: 6px 12px;
     border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
     color: var(--text-primary);
     font-family: var(--font-mono);
     /* Technical look for values */
+}
+
+.component-table td:last-child {
+    border-right: none;
 }
 
 .component-table tr:hover td {
